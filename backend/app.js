@@ -9,8 +9,7 @@ const app = express();
 
 const cors = require("cors");
 const allowedOrigins = [
-  'https://admin-panel-1-gjrv.onrender.com', // your live frontend
-  'http://localhost:5173', // local dev frontend
+  'https://admin-panel-1-gjrv.onrender.com'
 ];
 app.use(
   cors({
