@@ -52,7 +52,7 @@ export default function SignUpForm() {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = "https://admin-panel-snq4.onrender.com/auth/google";
+    window.location.href = "https://admin-panel-snq4.onrender.com/api/admin/auth/google";
   };
 
   return (

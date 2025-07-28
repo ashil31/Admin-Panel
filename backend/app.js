@@ -11,7 +11,7 @@ const cors = require("cors");
 
 app.use(
   cors({
-    origin: "http://localhost:5173", // 👈 Your frontend origin, not '*'
+    origin: "https://admin-panel-1-gjrv.onrender.com/", // 👈 Your frontend origin, not '*'
     credentials: true, // 🔥 THIS IS REQUIRED for cookies to work
   })
 );

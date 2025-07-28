@@ -5,7 +5,7 @@ import axios, {
 } from "axios";
 
 const api: AxiosInstance = axios.create({
-  baseURL: "https://admin-panel-snq4.onrender.com",
+  baseURL: "https://admin-panel-snq4.onrender.com/api/admin",
   withCredentials: true,
 });
 
