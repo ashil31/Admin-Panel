@@ -34,7 +34,7 @@ exports.googleCallback = async (req, res) => {
     console.log("Google callback successful, user:", req.user);
     const token = generateToken(req.user);
     console.log("Generated JWT token:", token);
-    res.redirect(`http://localhost:5173/oauth-callback?token=${token}`);
+    res.redirect(`https://admin-panel-1-gjrv.onrender.com/oauth-callback?token=${token}`);
   } catch (error) {
     console.error("Error generating token or redirecting:", error);
     res.redirect("/register");
