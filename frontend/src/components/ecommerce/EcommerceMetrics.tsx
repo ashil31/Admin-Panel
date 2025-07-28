@@ -26,7 +26,7 @@ export default function EcommerceMetrics() {
           setIsPositive(true);
         } else {
           const diff = ((currentCount - prevCount) / prevCount) * 100;
-          setGrowth(Math.abs(diff.toFixed(2)));
+          setGrowth(Math.abs(Number(diff.toFixed(2))));
           setIsPositive(diff >= 0);
         }
       } catch (error) {
@@ -55,8 +55,7 @@ export default function EcommerceMetrics() {
         </div>
 
         <Badge
-          color={isPositive ? "success" : "destructive"}
-          className="flex items-center gap-1 text-sm px-3 py-1 font-semibold"
+          color={isPositive ? "primary" : "warning"}
         >
           {isPositive ? (
             <ArrowUpIcon className="size-4" />

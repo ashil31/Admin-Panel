@@ -41,7 +41,7 @@ export default function RewardTableOne() {
           rewardSent: r.rewardSent,
           amount: r.amount,
         }))
-        .sort((a, b) => b._id.localeCompare(a._id));
+        .sort((a: RewardedUser , b: RewardedUser) => b._id.localeCompare(a._id));
       setUsers(visibleUsers);
       setTotalPages(res.data.totalPages);
     } catch (err) {
