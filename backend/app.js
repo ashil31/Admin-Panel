@@ -8,10 +8,19 @@ require("./config/passport");
 const app = express();
 
 const cors = require("cors");
-
+const allowedOrigins = [
+  'https://admin-panel-1-gjrv.onrender.com', // your live frontend
+  'http://localhost:5173', // local dev frontend
+];
 app.use(
   cors({
-    origin: "https://admin-panel-1-gjrv.onrender.com/", // 👈 Your frontend origin, not '*'
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    }, // 👈 Your frontend origin, not '*'
     credentials: true, // 🔥 THIS IS REQUIRED for cookies to work
   })
 );
