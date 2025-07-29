@@ -5,13 +5,13 @@ import {
   TableHeader,
   TableRow,
 } from "../../ui/table";
-
 import Badge from "../../ui/badge/Badge";
 import api from "../../../api/axios";
 import socket from "../../../socket/socket";
-import { useEffect, useState } from "react";
+import { useEffect, useState, forwardRef, useImperativeHandle } from "react";
 import Button from "../../ui/button/Button";
-
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 
 interface RewardedUser {
   _id: string;
@@ -24,8 +24,18 @@ interface RewardedUser {
   createdAt?: string;
 }
 
+interface RewardedUser {
+  _id: string;
+  name: string;
+  occupation?: string;
+  qrSerialNumber?: string;
+  pumpSerialNumber?: string;
+  rewardSent: "YES" | "NO";
+  amount?: number;
+  createdAt?: string;
+}
 
-export default function RewardTableOne() {
+const RewardTableOne = forwardRef((_, ref) => {
   const [users, setUsers] = useState<RewardedUser[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -35,13 +45,22 @@ export default function RewardTableOne() {
       const res = await api.get("/users/rewarded", { params: { page } });
       console.log("Data: ", res.data);
       const visibleUsers: RewardedUser[] = res.data.rewards
-        .filter((u: { user?: RewardedUser; rewardSent: "YES" | "NO" }) => u.rewardSent === "YES" && u.user)
-        .map((r: { user: RewardedUser; rewardSent: "YES" | "NO"; amount?: number }) => ({
-          ...r.user, // flatten user fields into top-level object
-          rewardSent: r.rewardSent,
-          amount: r.amount,
-        }))
-        .sort((a: RewardedUser , b: RewardedUser) => b._id.localeCompare(a._id));
+        .filter(
+          (u: { user?: RewardedUser; rewardSent: "YES" | "NO" }) =>
+            u.rewardSent === "YES" && u.user
+        )
+        .map(
+          (r: {
+            user: RewardedUser;
+            rewardSent: "YES" | "NO";
+            amount?: number;
+          }) => ({
+            ...r.user, // flatten user fields into top-level object
+            rewardSent: r.rewardSent,
+            amount: r.amount,
+          })
+        )
+        .sort((a: RewardedUser, b: RewardedUser) => b._id.localeCompare(a._id));
       setUsers(visibleUsers);
       setTotalPages(res.data.totalPages);
     } catch (err) {
@@ -59,7 +78,11 @@ export default function RewardTableOne() {
         setUsers((prevUsers) => {
           const updated = [newUser, ...prevUsers]
             .slice(0, 10)
-            .sort((a, b) => new Date(b.createdAt || "").getTime() - new Date(a.createdAt || "").getTime());
+            .sort(
+              (a, b) =>
+                new Date(b.createdAt || "").getTime() -
+                new Date(a.createdAt || "").getTime()
+            );
           return updated;
         });
       }
@@ -73,6 +96,37 @@ export default function RewardTableOne() {
       socket.off("newUser", handleNewUser);
     };
   }, [page]);
+
+  const exportToExcel = () => {
+    const data = users.map((u, index) => ({
+      "#": index + 1,
+      Name: u.name,
+      Occupation: u.occupation || "-",
+      "QR Serial": u.qrSerialNumber || "-",
+      "Serial Number": u.pumpSerialNumber || "-",
+      "Reward Status": u.rewardSent,
+      "Reward Amount": u.amount ?? "-",
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Rewards");
+
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
+
+    const blob = new Blob([excelBuffer], {
+      type: "application/octet-stream",
+    });
+
+    saveAs(blob, "rewarded-users.xlsx");
+  };
+
+  useImperativeHandle(ref, () => ({
+    exportToExcel,
+  }));
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-2xl bg-white dark:border-white/[0.05] dark:bg-white/[0.03] dark:hover:shadow-white/5">
@@ -188,4 +242,6 @@ export default function RewardTableOne() {
       </div>
     </div>
   );
-}
+});
+
+export default RewardTableOne;
