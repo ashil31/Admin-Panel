@@ -6,7 +6,7 @@ let io;
 function initSocket(server) {
   io = new Server(server, {
     cors: {
-      origin: "*", // You can restrict it to frontend URL in production
+      origin: "https://admin-panel-1-gjrv.onrender.com/", // You can restrict it to frontend URL in production
       methods: ["GET", "POST", "PATCH"],
     },
   });
