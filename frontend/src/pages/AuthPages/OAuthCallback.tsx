@@ -20,7 +20,6 @@ export default function OAuthCallback() {
     const params = new URLSearchParams(location.search);
     const token = params.get("token");
 
-    console.log("OAuthCallback token from URL:", token);
 
     if (token) {
       try {

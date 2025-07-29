@@ -43,7 +43,6 @@ const RewardTableOne = forwardRef((_, ref) => {
   const load = async () => {
     try {
       const res = await api.get("/users/rewarded", { params: { page } });
-      console.log("Data: ", res.data);
       const visibleUsers: RewardedUser[] = res.data.rewards
         .filter(
           (u: { user?: RewardedUser; rewardSent: "YES" | "NO" }) =>

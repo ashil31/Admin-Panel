@@ -13,7 +13,6 @@ export default function EcommerceMetrics() {
       try {
         const res = await api.get("/users/monthly-users");
         const data = res.data.monthlyUserCounts;
-        console.log(data);        
 
         const currentMonth = new Date().getMonth(); // 0-indexed
         const currentCount = data[currentMonth] || 0;
