@@ -7,11 +7,11 @@ import {
 } from "../../ui/table";
 
 import Badge from "../../ui/badge/Badge";
-// import api from "../../../api/axios";
 import api from "../../../api/axios";
 import socket from "../../../socket/socket";
 import { useEffect, useState } from "react";
 import Button from "../../ui/button/Button";
+import Alert from "../../../components/ui/alert/Alert";
 
 interface User {
   _id: string;
@@ -36,11 +36,12 @@ export default function BasicTableOne() {
   const [page, setPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [rewardAmounts, setRewardAmounts] = useState<RewardAmounts>({});
+  const [successMessage, setSuccessMessage] = useState<string | null>(null); // ✅
+  const [errorMessage, setErrorMessage] = useState<string | null>(null); // ✅
 
   const load = async () => {
     try {
       const res = await api.get("/users", { params: { page } });
-      console.log("Data: ", res.data);
       const visibleUsers: User[] = res.data.users
         .filter((u: User) => u.rewardSent !== "YES")
         .sort((a: User, b: User) => b._id.localeCompare(a._id));
@@ -53,10 +54,11 @@ export default function BasicTableOne() {
 
   const updateRewardStatus = async (id: string, status: "YES" | "NO") => {
     try {
-      const amount = rewardAmounts[id]; // ✅ Get the amount for the specific user
+      const amount = rewardAmounts[id];
 
       if (!amount) {
-        alert("Please enter a reward amount before updating status.");
+        setErrorMessage("Please enter a reward amount before updating status.");
+        setTimeout(() => setErrorMessage(null), 3000);
         return;
       }
 
@@ -67,10 +69,15 @@ export default function BasicTableOne() {
 
       if (status === "YES") {
         setUsers((prev) => prev.filter((u) => u._id !== id));
+        setSuccessMessage("🎉 Reward successfully sent and user removed.");
+        setTimeout(() => setSuccessMessage(null), 3000);
       }
+
       await load();
     } catch (err) {
       console.error("Failed to update reward status:", err);
+      setErrorMessage("Something went wrong. Please try again.");
+      setTimeout(() => setErrorMessage(null), 4000);
     }
   };
 
@@ -87,7 +94,6 @@ export default function BasicTableOne() {
     const handleRewardUpdate = () => load();
 
     const handleNewUser = (newUser: User) => {
-      console.log("📥 New user submitted:", newUser);
       if (newUser.rewardSent !== "YES") {
         setUsers((prevUsers) => {
           const updated = [newUser, ...prevUsers]
@@ -105,19 +111,32 @@ export default function BasicTableOne() {
     socket.on("rewardUpdated", handleRewardUpdate);
     socket.on("newUser", handleNewUser);
 
-    // Cleanup
     return () => {
       socket.off("rewardUpdated", handleRewardUpdate);
       socket.off("newUser", handleNewUser);
     };
   }, [page]);
+
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-2xl bg-white dark:border-white/[0.05] dark:bg-white/[0.03] dark:hover:shadow-white/5">
+      {/* ✅ Alert section */}
+      {successMessage && (
+        <div className="p-4">
+          <Alert variant="success" title="Success" message={successMessage} />
+        </div>
+      )}
+      {errorMessage && (
+        <div className="p-4">
+          <Alert variant="error" title="Error" message={errorMessage} />
+        </div>
+      )}
+
       <div className="max-w-full overflow-x-auto">
         <Table>
           {/* Table Header */}
           <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
             <TableRow>
+              {/* ... unchanged headers ... */}
               <TableCell
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
@@ -178,7 +197,6 @@ export default function BasicTableOne() {
               >
                 Reward Amount
               </TableCell>
-
               <TableCell
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
@@ -254,7 +272,6 @@ export default function BasicTableOne() {
                     />
                   </div>
                 </TableCell>
-
                 <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                   <div className="flex gap-2">
                     <Button
