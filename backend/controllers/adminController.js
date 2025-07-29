@@ -4,6 +4,8 @@ const Reward = require("../models/Reward.model");
 const bcrypt = require("bcryptjs");
 const { generateToken } = require("../utils/jwt");
 const { emitNewUser, emitRewardUpdate } = require("../socket/socketHandler");
+const dayjs = require("dayjs");
+
 
 exports.register = async (req, res) => {
   const { email, password, name } = req.body;
@@ -65,18 +67,30 @@ exports.getUsers = async (req, res) => {
 
 
 
+
+
 exports.getRewardedUsers = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
 
-    const rewards = await Reward.find({ rewardSent: "YES" })
-      .populate("user") // gets full user object
+    // Get start and end of current month using dayjs
+    const startOfMonth = dayjs().startOf("month").toDate(); 
+    const endOfMonth = dayjs().endOf("month").toDate();    
+
+    const filter = {
+      rewardSent: "YES",
+      updatedAt: { $gte: startOfMonth, $lte: endOfMonth },
+    };
+
+    const rewards = await Reward.find(filter)
+      .populate("user")
       .sort({ updatedAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit);
 
-    const totalPages = Math.ceil(await Reward.countDocuments({ rewardSent: "YES" }) / limit);
+    const totalCount = await Reward.countDocuments(filter);
+    const totalPages = Math.ceil(totalCount / limit);
 
     res.status(200).json({ rewards, totalPages });
   } catch (err) {
