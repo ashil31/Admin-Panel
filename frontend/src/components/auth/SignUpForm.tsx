@@ -6,6 +6,7 @@ import Input from "../form/input/InputField";
 import api from "../../api/axios";
 import { jwtDecode } from "jwt-decode";
 import { useAuth } from "../../context/AuthContext";
+import type { AxiosError } from "axios";
 
 interface AuthUser {
   email: string;
@@ -33,11 +34,31 @@ export default function SignUpForm() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+
+    // Basic validation
+    if (
+      !formData.firstName.trim() ||
+      !formData.lastName.trim() ||
+      !formData.email.trim() ||
+      !formData.password.trim()
+    ) {
+      alert("Please fill out all the required fields.");
+      return;
+    }
+
+    const payload = {
+      name: `${formData.firstName} ${formData.lastName}`.trim(),
+      email: formData.email,
+      password: formData.password,
+    };
+
     try {
-      const res = await api.post("/api/auth/register", formData);
+      const res = await api.post("/register", payload);
+
       if (res.data.token) {
         localStorage.setItem("token", res.data.token);
         const decoded = jwtDecode<AuthUser>(res.data.token);
+
         setUser({
           email: decoded.email,
           name: decoded.name || "",
@@ -47,12 +68,18 @@ export default function SignUpForm() {
         navigate("/dashboard");
       }
     } catch (err) {
-      console.error("Registration error:", err);
+      const error = err as AxiosError<{ message: string }>;
+      console.error(
+        "Registration error:",
+        error.response?.data || error.message || error
+      );
+      alert(error.response?.data?.message || "Registration failed.");
     }
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = "https://admin-panel-snq4.onrender.com/api/admin/auth/google";
+    window.location.href =
+      "https://admin-panel-snq4.onrender.com/api/admin/auth/google";
   };
 
   return (
@@ -77,10 +104,22 @@ export default function SignUpForm() {
             >
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                 {/* Google SVG Path */}
-                <path d="M18.75 10.2c0-.72-.06-1.24-.19-1.79h-8.38v3.25h4.92c-.1.81-.64 2.03-1.82 2.85l-.02.11 2.65 2.01.18.02c1.67-1.52 2.64-3.76 2.64-6.45Z" fill="#4285F4"/>
-                <path d="M10.18 18.75c2.41 0 4.43-.78 5.91-2.12l-2.82-2.14c-.75.52-1.77.88-3.09.88-2.36 0-4.36-1.53-5.07-3.63l-.1.01-2.76 2.1-.04.1c1.47 2.85 4.48 4.8 7.97 4.8Z" fill="#34A853"/>
-                <path d="M5.1 11.73c-.18-.54-.3-1.12-.3-1.73 0-.61.11-1.19.29-1.73l-.01-.11-2.79-2.12-.09.04c-.6 1.19-.95 2.53-.95 3.91s.34 2.72.95 3.91l2.9-2.17Z" fill="#FBBC05"/>
-                <path d="M10.18 4.63c1.68 0 2.81.7 3.46 1.29l2.52-2.4C14.6 2.11 12.59 1.25 10.18 1.25 6.69 1.25 3.67 3.21 2.2 6.07l2.89 2.2C5.81 6.16 7.82 4.63 10.18 4.63Z" fill="#EB4335"/>
+                <path
+                  d="M18.75 10.2c0-.72-.06-1.24-.19-1.79h-8.38v3.25h4.92c-.1.81-.64 2.03-1.82 2.85l-.02.11 2.65 2.01.18.02c1.67-1.52 2.64-3.76 2.64-6.45Z"
+                  fill="#4285F4"
+                />
+                <path
+                  d="M10.18 18.75c2.41 0 4.43-.78 5.91-2.12l-2.82-2.14c-.75.52-1.77.88-3.09.88-2.36 0-4.36-1.53-5.07-3.63l-.1.01-2.76 2.1-.04.1c1.47 2.85 4.48 4.8 7.97 4.8Z"
+                  fill="#34A853"
+                />
+                <path
+                  d="M5.1 11.73c-.18-.54-.3-1.12-.3-1.73 0-.61.11-1.19.29-1.73l-.01-.11-2.79-2.12-.09.04c-.6 1.19-.95 2.53-.95 3.91s.34 2.72.95 3.91l2.9-2.17Z"
+                  fill="#FBBC05"
+                />
+                <path
+                  d="M10.18 4.63c1.68 0 2.81.7 3.46 1.29l2.52-2.4C14.6 2.11 12.59 1.25 10.18 1.25 6.69 1.25 3.67 3.21 2.2 6.07l2.89 2.2C5.81 6.16 7.82 4.63 10.18 4.63Z"
+                  fill="#EB4335"
+                />
               </svg>
               Sign up with Google
             </button>
