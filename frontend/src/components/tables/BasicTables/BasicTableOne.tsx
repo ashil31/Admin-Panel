@@ -115,7 +115,11 @@ export default function BasicTableOne() {
       socket.off("rewardUpdated", handleRewardUpdate);
       socket.off("newUser", handleNewUser);
     };
-  }, [page]);
+  }, []);
+  
+  useEffect(() => {
+  load();
+}, [page]);
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-2xl bg-white dark:border-white/[0.05] dark:bg-white/[0.03] dark:hover:shadow-white/5">
@@ -262,7 +266,7 @@ export default function BasicTableOne() {
                     ₹
                     <input
                       type="number"
-                      min={1}
+                      min={0}
                       value={rewardAmounts[u._id] || ""}
                       onChange={(e) =>
                         handleAmountChange(u._id, e.target.value)
