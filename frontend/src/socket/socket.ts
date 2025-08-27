@@ -9,14 +9,4 @@ const socket = io(URL, {
   // transports: ["websocket"], // optional: forces WebSocket
 });
 
-socket.on("connect", () => {
-  console.log("✅ Socket connected:", socket.id);
-});
-socket.on("connect_error", (err) => {
-  console.error("❌ Socket connect_error:", err.message, err);
-});
-socket.on("error", (err) => {
-  console.error("❌ Socket error:", err);
-});
-
 export default socket;
