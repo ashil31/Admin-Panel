@@ -47,7 +47,7 @@ export default function BasicTableOne() {
       const res = await api.get("/users", { params: { page } });
       const visibleUsers: User[] = res.data.users
         .filter((u: User) => u.rewardSent !== "YES")
-        .sort(sortByCreatedDesc); // ✅ consistent sort (createdAt desc)
+        .sort(sortByCreatedDesc);
       setUsers(visibleUsers);
       setTotalPages(res.data.totalPages);
     } catch (err) {
@@ -71,13 +71,12 @@ export default function BasicTableOne() {
       });
 
       if (status === "YES") {
-        // Optimistic remove from current list
         setUsers((prev) => prev.filter((u) => u._id !== id));
         setSuccessMessage("🎉 Reward successfully sent and user removed.");
         setTimeout(() => setSuccessMessage(null), 3000);
       }
 
-      await load(); // keep this; safe even if a socket event also triggers load
+      await load();
     } catch (err) {
       console.error("Failed to update reward status:", err);
       setErrorMessage("Something went wrong. Please try again.");
@@ -99,21 +98,12 @@ export default function BasicTableOne() {
     const handleRewardUpdate = () => load();
 
     const handleNewUser = (newUser: User) => {
-      if (newUser.rewardSent !== "YES") {
-        setUsers((prevUsers) => {
-          // Only prepend on page 1 to avoid confusing pagination views
-          if (page !== 1) return prevUsers;
+      // Show popup + reload current page so table updates automatically
+      setSuccessMessage(`New user submitted: ${newUser.name}`);
+      setTimeout(() => setSuccessMessage(null), 3000);
 
-          // De-duplicate if same user arrives again
-          const withoutDup = prevUsers.filter((u) => u._id !== newUser._id);
-
-          const updated = [newUser, ...withoutDup]
-            .sort(sortByCreatedDesc)
-            .slice(0, 10);
-
-          return updated;
-        });
-      }
+      // Always reload to keep pagination and counts correct
+      load();
     };
 
     socket.on("rewardUpdated", handleRewardUpdate);
@@ -124,7 +114,7 @@ export default function BasicTableOne() {
       socket.off("newUser", handleNewUser);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // ✅ no page dep here
+  }, []);
 
   // Pagination-only: fetch when page changes
   useEffect(() => {
