@@ -36,15 +36,18 @@ export default function BasicTableOne() {
   const [page, setPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [rewardAmounts, setRewardAmounts] = useState<RewardAmounts>({});
-  const [successMessage, setSuccessMessage] = useState<string | null>(null); // ✅
-  const [errorMessage, setErrorMessage] = useState<string | null>(null); // ✅
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const sortByCreatedDesc = (a: User, b: User) =>
+    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
 
   const load = async () => {
     try {
       const res = await api.get("/users", { params: { page } });
       const visibleUsers: User[] = res.data.users
         .filter((u: User) => u.rewardSent !== "YES")
-        .sort((a: User, b: User) => b._id.localeCompare(a._id));
+        .sort(sortByCreatedDesc); // ✅ consistent sort (createdAt desc)
       setUsers(visibleUsers);
       setTotalPages(res.data.totalPages);
     } catch (err) {
@@ -68,12 +71,13 @@ export default function BasicTableOne() {
       });
 
       if (status === "YES") {
+        // Optimistic remove from current list
         setUsers((prev) => prev.filter((u) => u._id !== id));
         setSuccessMessage("🎉 Reward successfully sent and user removed.");
         setTimeout(() => setSuccessMessage(null), 3000);
       }
 
-      await load();
+      await load(); // keep this; safe even if a socket event also triggers load
     } catch (err) {
       console.error("Failed to update reward status:", err);
       setErrorMessage("Something went wrong. Please try again.");
@@ -88,6 +92,7 @@ export default function BasicTableOne() {
     }));
   };
 
+  // Mount-only: set up sockets once
   useEffect(() => {
     load();
 
@@ -96,13 +101,16 @@ export default function BasicTableOne() {
     const handleNewUser = (newUser: User) => {
       if (newUser.rewardSent !== "YES") {
         setUsers((prevUsers) => {
-          const updated = [newUser, ...prevUsers]
-            .slice(0, 10)
-            .sort(
-              (a, b) =>
-                new Date(b.createdAt).getTime() -
-                new Date(a.createdAt).getTime()
-            );
+          // Only prepend on page 1 to avoid confusing pagination views
+          if (page !== 1) return prevUsers;
+
+          // De-duplicate if same user arrives again
+          const withoutDup = prevUsers.filter((u) => u._id !== newUser._id);
+
+          const updated = [newUser, ...withoutDup]
+            .sort(sortByCreatedDesc)
+            .slice(0, 10);
+
           return updated;
         });
       }
@@ -115,11 +123,14 @@ export default function BasicTableOne() {
       socket.off("rewardUpdated", handleRewardUpdate);
       socket.off("newUser", handleNewUser);
     };
-  }, []);
-  
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // ✅ no page dep here
+
+  // Pagination-only: fetch when page changes
   useEffect(() => {
-  load();
-}, [page]);
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page]);
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-2xl bg-white dark:border-white/[0.05] dark:bg-white/[0.03] dark:hover:shadow-white/5">
@@ -212,10 +223,10 @@ export default function BasicTableOne() {
 
           {/* Table Body */}
           <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-            {users.map((u, id) => (
-              <TableRow key={id}>
+            {users.map((u, index) => (
+              <TableRow key={u._id}>
                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                  {(page - 1) * 10 + id + 1}
+                  {(page - 1) * 10 + index + 1}
                 </TableCell>
                 <TableCell className="px-5 py-4 sm:px-6 text-start">
                   <div className="flex items-center gap-3">
