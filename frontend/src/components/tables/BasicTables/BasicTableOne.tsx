@@ -16,6 +16,7 @@ import Alert from "../../../components/ui/alert/Alert";
 interface User {
   _id: string;
   name: string;
+  phone: string;
   occupation: string;
   qrSerialNumber: string;
   pumpSerialNumber: string;
@@ -175,6 +176,7 @@ export default function BasicTableOne() {
             <TableRow>
               <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">#</TableCell>
               <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">User</TableCell>
+              <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">Phone NO.</TableCell>
               <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">QR Serial</TableCell>
               <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">SerialNumber</TableCell>
               <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">UPI ID</TableCell>
@@ -201,6 +203,7 @@ export default function BasicTableOne() {
                     </div>
                   </div>
                 </TableCell>
+                <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">{u.phone}</TableCell>
                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">{u.qrSerialNumber}</TableCell>
                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">{u.pumpSerialNumber}</TableCell>
                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">{u.upiId}</TableCell>

@@ -16,17 +16,7 @@ import { saveAs } from "file-saver";
 interface RewardedUser {
   _id: string;
   name: string;
-  occupation?: string;
-  qrSerialNumber?: string;
-  pumpSerialNumber?: string;
-  rewardSent: "YES" | "NO";
-  amount?: number;
-  createdAt?: string;
-}
-
-interface RewardedUser {
-  _id: string;
-  name: string;
+  phone?: string;
   occupation?: string;
   qrSerialNumber?: string;
   pumpSerialNumber?: string;
@@ -100,6 +90,7 @@ const RewardTableOne = forwardRef((_, ref) => {
     const data = users.map((u, index) => ({
       "#": index + 1,
       Name: u.name,
+      Phone: u.phone || "-",
       Occupation: u.occupation || "-",
       "QR Serial": u.qrSerialNumber || "-",
       "Serial Number": u.pumpSerialNumber || "-",
@@ -150,6 +141,12 @@ const RewardTableOne = forwardRef((_, ref) => {
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
+                Phone No.
+              </TableCell>
+              <TableCell
+                isHeader
+                className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+              >
                 QR Serial
               </TableCell>
               <TableCell
@@ -191,6 +188,9 @@ const RewardTableOne = forwardRef((_, ref) => {
                       </span>
                     </div>
                   </div>
+                </TableCell>
+                <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                  {u.phone}
                 </TableCell>
                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                   {u.qrSerialNumber}
